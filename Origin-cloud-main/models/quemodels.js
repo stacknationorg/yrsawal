@@ -18,33 +18,33 @@ const questionSchema = new mongoose.Schema({
 
     answers: [{
         author:String,
+        author_id:String,
         answer: String,
         date_answer: String,
         img: {
             data: Buffer,
             contentType: String
         },
-        comment: [
-            {
-                commentbody: String,
-                commentdate: String
-            }
-        ]
+      
     }]
     ,
 
     date: String,
     questComment: [{
         author:String,
+        author_id:String,
         qcommment: String,
         date_comment: String
     }
     ],
-    upvotes: {
-        type: Number,
-        default: 0
-    },
-    downvotes: Number,
+    ansComment:[
+       {author:String,
+        author_id:String,
+        answer:String,
+        comment:String
+       }
+    ],
+    upvotes: [String],
 })
 
 module.exports = mongoose.model("Question", questionSchema)

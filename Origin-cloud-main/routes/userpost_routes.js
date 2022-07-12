@@ -7,6 +7,9 @@ const userPost = require('../models/userposts_models')
 
 const User = require('../models/user.model')
 
+const sharedPost = require('../models/shared_post')
+
+const Ad = require('../models/ad_model')
 // const path = require('path');
 
 var MongoClient = require('mongodb').MongoClient;
@@ -32,11 +35,13 @@ router.get('/timeline/:id',authenticate, async (req, res) => {
     const user_id = req.user.uid
     const id = req.params.id
    console.log(user_id);
+   const ad = await Ad.find({})
+   const shared_posts = await sharedPost.find({shared_timeline:id}) 
    const new_user = await User.findById({_id:req.params.id})
    const user_post=await userPost.find({author:req.params.id})
 //    console.log(user_post);
 //    console.log(new_user);
-   res.render('user-timeline',{User:new_user,posts:user_post,login_id:user_id,User_id:id})
+   res.render('user-timeline',{User:new_user,posts:user_post,login_id:user_id,User_id:id,shares:shared_posts,Ads:ad})
    // MongoClient.connect('mongodb://localhost:27017', function(err, client) {
    //     if(err) throw err;
    //     var db =client.db("openDB")
@@ -211,5 +216,5 @@ router.post("/askQuestion/:id",authenticate,askQuestion)
 router.get('/like/:id', authorize, getLikes)
 
 router.get('/user/:id', authorize, getUserPosts)
-
+,
 module.exports = router

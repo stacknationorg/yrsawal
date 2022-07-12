@@ -7,6 +7,11 @@ const Post = require('../models/post.model')
 
 const Group = require('../models/group.model')
 
+const Ad = require('../models/ad_model')
+
+require('dotenv').config();
+const newURI = process.env.CLUSTER;
+
 // const path = require('path');
 
 var MongoClient = require('mongodb').MongoClient;
@@ -15,12 +20,13 @@ router.use(express.static('public'))
 
 const { append } = require("express/lib/response");
 
-const {askQuestion,createPoll, createPost, updatePost, deletePost, getUserPosts, likePost, getLikes, votePoll } = require('../controllers/post.controller')
+const { askQuestion,createPoll, createPost, updatePost, deletePost, getUserPosts, likePost, getLikes, votePoll, sharePost } = require('../controllers/post.controller')
 const { authenticate, authorize } = require('../controllers/user.controller')
 
 router.get('/grouptimeline/:name', authenticate , async function(req,res){
     const grp_name=req.params.name
     logged_in = req.user.uid
+    const ad = await Ad.find({})
     const grroup = await Group.findOne({group_name:grp_name})
     console.log(grroup);
     console.log(logged_in,grroup.admin);
@@ -28,7 +34,7 @@ router.get('/grouptimeline/:name', authenticate , async function(req,res){
     console.log(grroup.members.length);
     Post.find({group:grp_name},function(err,foundposts){
         // console.log(foundposts);
-        res.render("groups-timeline",{posts:foundposts,groupPost:grp_name,grp:grroup,Loggedin:logged_in})
+        res.render("groups-timeline",{posts:foundposts,groupPost:grp_name,grp:grroup,Loggedin:logged_in,Ads:ad})
     })
     
 })
@@ -44,7 +50,7 @@ router.post("/commentpost/:name", authenticate ,function(req,res){
     Post.findOne({_id:post_id},function(err,foundOne){
         const objid=foundOne._id
 
-        MongoClient.connect('mongodb://localhost:27017', function(err, client) {
+        MongoClient.connect(newURI, function(err, client) {
         if(err) throw err;
         var db =client.db("openDB")
         var collection = db.collection('posts');
@@ -65,7 +71,7 @@ router.post("/answerQuest/:name", authenticate ,function(req,res){
     Post.findOne({_id:post_id},function(err,foundOne){
         const objid=foundOne._id
 
-        MongoClient.connect('mongodb://localhost:27017', function(err, client) {
+        MongoClient.connect(newURI, function(err, client) {
         if(err) throw err;
         var db =client.db("openDB")
         var collection = db.collection('posts');
@@ -87,7 +93,7 @@ router.post("/answercomment/:ans", authenticate ,function(req,res){
         const objid=foundOne._id
         const name = foundOne.group
 
-        MongoClient.connect('mongodb://localhost:27017', function(err, client) {
+        MongoClient.connect(newURI, function(err, client) {
         if(err) throw err;
         var db =client.db("openDB")
         var collection = db.collection('posts');
@@ -109,7 +115,7 @@ router.post('/update/:id', authenticate, function(req,res){
         const objid=foundOne._id
         const name = foundOne.group
 
-        MongoClient.connect('mongodb://localhost:27017', function(err, client) {
+        MongoClient.connect(newURI, function(err, client) {
         if(err) throw err;
         var db =client.db("openDB")
         var collection = db.collection('posts');
@@ -131,7 +137,7 @@ router.post('/delete/:id', authenticate , function(req,res){
         const objid=foundOne._id
         const name = foundOne.group
 
-        MongoClient.connect('mongodb://localhost:27017', function(err, client) {
+        MongoClient.connect(newURI, function(err, client) {
         if(err) throw err;
         var db =client.db("openDB")
         var collection = db.collection('posts');
@@ -144,6 +150,8 @@ router.post('/delete/:id', authenticate , function(req,res){
     })
    
 })
+
+router.post("/share/:id",authenticate,sharePost)
 
 // Done
 router.post('/createPolls/:name', authenticate, createPoll) 

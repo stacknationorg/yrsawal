@@ -286,6 +286,15 @@
 										<div class="col-lg-10 col-md-9">
 											<ul class="profile-menu">
 												
+                                                <% if(login_id==User_id){ %>
+												<li>
+													<a class="active" href="/user/mentor">Be a Mentor</a>
+												</li>
+												<li>
+													<a class="active" href="/user/mentee">Find Mentor</a>
+												</li>
+												<% } %>
+												
 												<li>
 													<a class="active" href="/userpost/timeline/<%=User._id%>">Timeline</a>
 												</li>
@@ -402,6 +411,48 @@
 
 									</div><!-- add post new box -->
 									<% } %>
+
+									<% Ads.forEach(function(Ad){ %>
+										<div class="central-meta item">
+											<div class="user-post">
+												<div class="friend-info">
+													<figure>
+														<img src="/images/resources/hobo.jpg" alt="">
+													</figure>
+													<div class="friend-name">
+														<div class="more">
+															<!-- <div class="more-post-optns"><i class="ti-more-alt"></i>
+																<ul>
+																	<li><i class="fa fa-pencil-square-o"></i>Edit Post</li>
+																	<li><i class="fa fa-trash-o"></i>Delete Post</li>
+																	<li class="bad-report"><i class="fa fa-flag"></i>Report Post</li>
+																	</ul>
+															</div> -->
+														</div>
+														<ins><a href="<%=Ad.add_link%>" title=""><%=Ad.business_name%></a></ins>
+														<span>sponsored <i class="fa fa-globe"></i></span>
+														
+													</div>
+													<div class="post-meta">
+														<figure>
+															<img src="/images/sponsors.gif" alt="">
+															
+														</figure>	
+														<div class="description">
+															<a href="<%=Ad.add_link%>" class="learnmore" data-ripple="">Visit Website</a>
+															<p>
+																<%=Ad.body_text%>
+							
+															</p>
+														</div>
+														
+													</div>
+													
+												</div>
+											</div>
+										</div>
+							
+										<% }) %>
 									<% posts.forEach(function(post){ %>
 										<div class="loadMore">
 											<div class="central-meta item">
@@ -437,6 +488,16 @@
 																					</li>
 																				</ul>
 																		</li>
+
+																		<li>
+																			<form action="/post/share/<%= post.id %>"
+																				method="post"><button
+																					style="background-color:#47B5FF"
+																					type="submit" name="deletepost"
+																					value="<%= post.id %>">Share on Timeline
+																					</button></form>
+																		</li>
+																		
 																		<li>
 																			<form action="/userpost/delete/<%= post.id %>"
 																				method="post"><button
@@ -1089,7 +1150,7 @@
 												
 											</div>
 										</div>
-									</div> digital sponsors -->
+									</div> -->
 									<!-- <div class="central-meta item">
 										<div class="user-post">
 											<div class="friend-info">
@@ -1198,7 +1259,50 @@
 								
 							    </div>  --> 
 							</div><!-- centerl meta -->
-							
+							<% shares.forEach(function(share){ %>
+
+								<div class="loadMore">
+									<div class="central-meta item">
+										<div class="user-post">
+											<div class="friend-info">
+												<figure>
+													<img src="/images/resources/hobo.jpg" alt="">
+												</figure>
+								<%if(share.type==="userpost"){%>
+							<ins><a href="/userpost/timeline/<%=share.author%>" title="">
+								<%= share.author %>
+							</a></ins>
+						
+				</div>
+				<div class="post-meta">
+					<figure>
+						<img src="images/resources/user-post.jpg" alt="">
+
+						<h4 id="esitpost">
+							<%= share.body %>
+						</h4>
+						</a>
+						<% } %>
+						<% if(share.type==="grouppost"){ %> 
+							<ins><a href="/post/grouptimeline/<%=share.group%>" title="">
+								<%= share.author %>
+							</a></ins>
+						</div>		
+				</div>
+				<div class="post-meta">
+					<figure>
+						<img src="images/resources/user-post.jpg" alt="">
+
+						<h4 id="esitpost">
+							<%= share.body %>
+						</h4>
+						</a>
+							<% } %>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>			<% }) %>
 						</div>	
 					</div>
 				</div>

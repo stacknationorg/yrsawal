@@ -3,7 +3,7 @@ const passport = require('passport')
 const User = require('../models/user.model')
 const {followUser,authorize,authenticate, signupUser, loginUser, updateUser, logoutUser,userFollower } = require('../controllers/user.controller')
 const { UserRefreshClient } = require('googleapis-common')
-
+const {createMentor,createMentee} = require('../controllers/mentor_mentee_controller')
 var MongoClient = require('mongodb').MongoClient;
 
 router.get('/login', (req, res) => {
@@ -83,5 +83,21 @@ router.get('/failed/facebook', (req, res)=>res.json({ error: 'Failed to authenti
 router.get('/failed/google', (req, res)=>res.json({ error: 'Failed to authenticate' }))
 
 router.get('/logout',authorize, logoutUser)
+
+router.get("/mentee",authenticate, async function(req,res){
+	const user = await User.findById({_id:req.user.uid})
+	res.render("pro",{User:user})
+})
+
+router.get("/mentor",authenticate,async function(req,res){
+	const user = await User.findById({_id:req.user.uid})
+	res.render("mentor",{User:user})
+})
+
+router.post("/creatementee",authenticate,createMentee)
+
+router.post("/creatementor",authenticate,createMentor)
+
+
 
 module.exports = router

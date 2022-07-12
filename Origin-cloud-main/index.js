@@ -95,6 +95,10 @@ app.use(passport.session())
 
 const queroutes = require("./routes/queroutes.js")
 
+const adroutes = require("./routes/ads_routes.js")
+
+const adminroutes = require("./routes/admin_routes.js")
+
 // app.use("/",routes)
 
 // passport.use(new GoogleStrategy(
@@ -165,6 +169,8 @@ const queroutes = require("./routes/queroutes.js")
 // passport.deserializeUser((user, done) => {
 // 	done(null, {...user, uid: user._id})
 // })
+app.use('/admin', adminroutes)
+app.use('/ad', adroutes)
 app.use('/', queroutes)
 app.use('/userpost', userpostRoute)
 app.use('/user', userRoute)
@@ -201,53 +207,9 @@ app.use('/post', postRoute)
 // 	res.render("view-profile")
 // })
 
-
-
-
-
-
-
-app.get('/', (req, res) => {
-    res.render('index')
+app.get("/pro",function(req,res){
+    res.render("pro")
 })
-
-
-
-app.get('/dashboard', authUser, (req, res) => {
-    if (req.user) {
-        return res.render('dashboard')
-    }
-    req.flash("success", "Please login")
-    return res.redirect('/login')
-})
-
-app.get('/groupfollowers',function(req,res){
-    res.render("group-followers")
-})
-
-app.get('/updatedetails', authUser, (req, res) => {
-    if (req.user) {
-        return res.render('update', {
-            user: req.user.data
-        })
-    }
-    req.flash("success", "Please login")
-    return res.redirect('/login')
-})
-
-app.get("/editprofile",function(ewq,res){
-    res.render("edit-profile")
-})
-
-app.get("/notifications",function(ewq,res){
-    res.render("notifications")
-})
-
-app.get("/usertimeline",function(ewq,res){
-    res.render("user-timeline")
-})
-
-app.use('/api/auth', require('./routes/auth'));
 
 app.listen(port, () => {
     console.log(`App is listening on port http://localhost:${port}`);

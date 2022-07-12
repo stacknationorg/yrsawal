@@ -1,5 +1,7 @@
 // Import Post Model
 const Post = require('../models/post.model')
+const userPost = require('../models/userposts_models')
+const sharedPost = require('../models/shared_post')
 
 // Create a new post with required fields
 const createPost = async (req, res) => {
@@ -430,6 +432,58 @@ const askQuestion = async (req, res) => {
 	res.redirect("/post/grouptimeline/"+ group)
 }
 
+const sharePost = async function(req,res){
+	const loged_in = req.user.uid
+
+	const post_id = req.params.id
+
+
+	const sharedposts = await sharedPost.find({posts_id:post_id,shared_timeline:loged_in})
+
+    if(sharedposts.length<1){
+	const userpost = await userPost.findById({_id:post_id})
+	
+
+	if (userpost){
+		const sharedpost = new sharedPost({
+			author:userpost.author,
+			body:userpost.body,
+			type:"userpost",
+			shared_timeline:loged_in,
+			posts_id:post_id
+
+		})
+		sharedpost.save()
+		res.redirect("/userpost/timeline/"+req.user.uid)
+	}
+    else{
+	const post = await Post.findById({_id:post_id})
+
+	
+		const sharedpost = new sharedPost({
+			author:post.author,
+			body:post.body,
+			type:"grouppost",
+			shared_timeline:loged_in,
+			group:post.group,
+			posts_id:post_id
+
+		})
+		sharedpost.save()
+		res.redirect("/userpost/timeline/"+req.user.uid)
+	}
+   }
+else{
+
+	res.redirect("/userpost/timeline/"+req.user.uid)
+//    return res.json({
+// 	message:"Post is already shared on your Timeline"
+//    })
+}  
+
+
+}
+
 module.exports = {
 	askQuestion,
 	createPoll,
@@ -440,4 +494,5 @@ module.exports = {
 	getUserPosts,
 	getLikes,
 	votePoll,
+	sharePost
 }

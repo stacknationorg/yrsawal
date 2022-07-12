@@ -21,6 +21,8 @@ const userPost = require('../models/userposts_models')
 
 const User = require('../models/user.model')
 
+const Ad   = require('../models/ad_model')
+
 
 
 
@@ -80,18 +82,33 @@ Question.save()
 })
 
 
-router.get("/",function(req,res){
+router.get("/",async function(req,res){
+    const ad =await Ad.find({})
     questionModel.find({},function(err,founditems){
         // var thumb = new Buffer(founditems.image.data).toString('base64')
         console.log(founditems.details);
-        res.render("questions",{newQuestions:founditems})
+        res.render("questions",{newQuestions:founditems,Ads:ad})
         //  console.log(founditems);
     })
    
 })
 
+router.get("/questions/:id", authenticate, async function(req,res){
+    const QuestionID = req.params.id
+    console.log(QuestionID);
+    const foundOne = await questionModel.findById({_id:req.params.id})
+    // questionModel.findOne({_id:QuestionID},function(err,foundOne){
+        console.log(foundOne.title);
+
+
+        res.render("question-details",{Question:foundOne,Answers:foundOne.answers,Questcomments:foundOne.questComment})
+        // console.log(Answers);
+    
+
+})
+
 router.post("/questions/:id", authenticate, async function(req,res){
-    const QuestionID = req.body.question_details
+    const QuestionID = req.params.id
     console.log(QuestionID);
     const foundOne = await questionModel.findById({_id:req.params.id})
     // questionModel.findOne({_id:QuestionID},function(err,foundOne){
@@ -106,8 +123,13 @@ router.post("/questions/:id", authenticate, async function(req,res){
 
 var MongoClient = require('mongodb').MongoClient;
 
-router.post("/answers", authenticate,function(req,res){
-    const Questionid = req.body.answer_details
+router.post("/answers/:id", authenticate, async function(req,res){
+    const Questionid = req.params.id
+    
+    const answering_user_id = req.user.uid
+
+    const answering_user = await User.findById({_id:answering_user_id})
+
     // console.log(Questionid);
     const User_answer=req.body.message
 
@@ -118,14 +140,14 @@ router.post("/answers", authenticate,function(req,res){
         var dateAns = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
         const objid=foundOne._id
         console.log(objid);
-        console.log(req.file.filename);
+        // console.log(req.file.filename);
         MongoClient.connect('mongodb://localhost:27017', function(err, client) {
         if(err) throw err;
         var db =client.db("openDB")
         var collection = db.collection('questions');
-        collection.updateOne({_id:objid},{ $push:{answers:{answer:User_answer,date_answer:dateAns,author:req.user.uid}}})
+        collection.updateOne({_id:objid},{ $push:{answers:{answer:User_answer,date_answer:dateAns,author:answering_user.name,author_id:req.user.uid}}})
         console.log(User_answer);
-        res.redirect("/")
+        res.redirect("/questions/"+Questionid)
 
         })
         
@@ -134,7 +156,13 @@ router.post("/answers", authenticate,function(req,res){
     // ,img:{data:fs.readFileSync(path.join( 'C:/Users/Anonymous/Desktop/questions/uploads/' + req.file.filename)),contentType:'image/png'}
 })
 
-router.post("/comments", authenticate ,function(req,res){
+router.post("/comments/:id", authenticate , async function(req,res){
+    const commenting_user_id = req.user.uid
+    
+    const commenting_user = await User.findById({_id:commenting_user_id})
+
+    console.log(commenting_user);
+
     const Questionid = req.body.comment_details
     // console.log(Questionid);
     const User_comment=req.body.message_comment
@@ -150,9 +178,9 @@ router.post("/comments", authenticate ,function(req,res){
         if(err) throw err;
         var db =client.db("openDB")
         var collection = db.collection('questions');
-        collection.updateOne({_id:objid},{ $push:{questComment:{qcommment:User_comment,date_comment:datecomm,author:req.user.uid}}})
+        collection.updateOne({_id:objid},{ $push:{questComment:{qcommment:User_comment,date_comment:datecomm,author:commenting_user.name,author_id:req.user.uid}}})
         console.log(User_comment);
-        res.redirect("/")
+        res.redirect("/questions/"+Questionid)
 
         })
         
@@ -161,8 +189,13 @@ router.post("/comments", authenticate ,function(req,res){
    
 })
 
-router.post("/answercomment", authenticate ,function(req,res){
-    const Questionid = req.body.answercomment_details
+router.post("/answercomment/:id", authenticate , async function(req,res){
+    const Questionid = req.params.id
+     
+    const answering_user_id = req.user.uid
+
+    const answering_user = await User.findById({_id:answering_user_id})
+    
     // console.log(Questionid);
     const User_comment=req.body.messageanswer_comment
 
@@ -172,9 +205,9 @@ router.post("/answercomment", authenticate ,function(req,res){
         if(err) throw err;
         var db =client.db("openDB")
         var collection = db.collection('questions');
-        collection.updateOne({_id:objid},{ $push:{answers:{comment:{commentbody:User_comment}}}})
+        collection.updateOne({_id:objid},{ $push:{ansComment:{author:answering_user.name,comment:User_comment,answer:req.body.answercomment_details,author_id:req.user.uid}}})
         console.log(User_comment);
-        res.redirect("/")
+        res.redirect("/questions/"+Questionid)
 
         })
         
@@ -216,5 +249,60 @@ router.post("/upvote", authenticate ,function(req,res){
 
     })
 })
+
+
+const upVote = async (req, res) => {
+
+	// Get required fields from request
+	const user_id = req.user.uid
+	const { id: post_id } = req.params
+
+	// Post id is required to like a post
+	if (!post_id) {
+		return res.json({
+			error: "Missing post id in params"
+		})
+	}
+
+	try {
+		// Get post info from database with post_id
+		const question = await questionModel.findById(post_id)
+		if (question) {
+
+			// Add current user to posts likes if not exist, save the updated post
+			if (question.upvotes.indexOf(user_id) !== -1) {
+				question.upvotes = question.upvotes.filter(user => user !== user_id)
+				await question.save()
+				// res.json({
+				// 	message: 'Post disliked.',
+				// 	liked: false
+				// })
+			} else {
+				question.upvotes.push(user_id)
+				await question.save()
+				// res.json({
+				// 	message: "Post liked.",
+				// 	liked: true
+				// })
+			}
+			res.redirect("/questions/"+ question._id)
+		} else {
+			return res.json({
+				error: "Post not found.",
+			})
+		}
+	} catch (error) {
+		// Something went wrong with server, Use `error` as payload if required
+		res.json({
+			error: "Something went wrong.",
+			payload: error
+		})
+	}
+}
+
+router.post("/upvote/:id",authenticate,upVote)
+
+
+
 
 module.exports = router
