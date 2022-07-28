@@ -3,10 +3,11 @@ const { append } = require("express/lib/response");
 
 const router = express.Router()
 
-const { authenticate, authorize } = require('../controllers/user.controller')
+const {getuserlocation, authenticate, authorize } = require('../controllers/user.controller')
 
-router.get("/askquestion",authenticate, function(req,res){
-    res.render("ask-question")
+router.get("/askquestion",authenticate,async function(req,res){
+    const new_user = await User.findById({_id:req.user.uid})
+    res.render("ask-question",{Usera:new_user})
 })
 
 
@@ -30,6 +31,7 @@ const fs = require('fs');
 const path = require('path');
 
 const multer = require('multer');
+const { url } = require("inspector");
   
 // const upload = multer({ dest: 'uploads/' })
 
@@ -49,7 +51,8 @@ var upload = multer({ storage: storage });
 
 
 
-router.post("/askquestion", authenticate , upload.single("files"),function(req,res){
+router.post("/askquestion", authenticate , upload.single("files")
+,async function(req,res){
     const question_cateogary=req.body.cateogaries
     const question_title=req.body.title
     const question_tags=req.body.tags
@@ -60,48 +63,84 @@ router.post("/askquestion", authenticate , upload.single("files"),function(req,r
 var dateQuest = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
 
 
+var image = {}
+if (req.file==undefined){
+    var image = {
+      default:"No image"  
+   }
+   }
+   const filename_1 = req.file.filename
+   console.log(filename_1)
+   const extension = filename_1.slice(
+    filename_1.indexOf(".") + 1,
+    filename_1.lastIndexOf("-")
+   )
+   console.log(extension);
+
+if (req.file!==undefined && (extension ==="png" || extension ==="jpeg" )){
+    var image = {
+        data: fs.readFileSync(path.join( 'C:/Users/Anonymous/Desktop/Origin-cloud-main/Origin-cloud-main/uploads/' + req.file.filename)),
+        contentType: 'image/png'
+    }
+
+//    console.log(image);
+   }  
+
+   if (req.file!==undefined && extension ==="mp4"){
+    var video = {
+        data: fs.readFileSync(path.join( 'C:/Users/Anonymous/Desktop/Origin-cloud-main/Origin-cloud-main/uploads/' + req.file.filename)),
+        contentType: 'video/mp4'
+    }
+   }
+
+   const author_naam = await User.findById({_id:req.user.uid})
 const Question = new questionModel({
+            author_name:author_naam.name,
             author:req.user.uid,
             title:question_title,
              cateogary:question_cateogary,
              tags:question_tags,
              details:question_details,
-             img: {
-                data: fs.readFileSync(path.join( 'C:/Users/Anonymous/Desktop/Origin-cloud-main/Origin-cloud-main/uploads/' + req.file.filename)),
-                contentType: 'image/png'
-            },
-            date:dateQuest
-             
+             img:image,
+             vdo:video,
+            date:dateQuest     
 })
 
 Question.save()
     // console.log(question_tag);
     // console.log(Question);
     console.log("Question Submitted successfully")
-    res.redirect("/")
+    res.redirect("/questions")
 })
 
 
-router.get("/",async function(req,res){
-    const ad =await Ad.find({})
-    questionModel.find({},function(err,founditems){
+router.get("/questions", authenticate,getuserlocation, async function(req,res){
+    const data = req.userloc 
+    const ad =await Ad.find({locations:data.city})
+    const new_user = await User.findById({_id:req.user.uid})
+    // console.log(new_user)
+    const founditems = await questionModel.find({})
         // var thumb = new Buffer(founditems.image.data).toString('base64')
-        console.log(founditems.details);
-        res.render("questions",{newQuestions:founditems,Ads:ad})
+        // console.log(founditems.details);
+        res.render("questions",{newQuestions:founditems,Ads:ad,Usera:new_user})
         //  console.log(founditems);
-    })
+    
    
 })
 
 router.get("/questions/:id", authenticate, async function(req,res){
     const QuestionID = req.params.id
+    const id= req.user.uid
+    console.log(id)
     console.log(QuestionID);
+    const new_user = await User.findById({_id:req.user.uid})
+    console.log(new_user)
     const foundOne = await questionModel.findById({_id:req.params.id})
     // questionModel.findOne({_id:QuestionID},function(err,foundOne){
         console.log(foundOne.title);
 
 
-        res.render("question-details",{Question:foundOne,Answers:foundOne.answers,Questcomments:foundOne.questComment})
+        res.render("question-details",{Question:foundOne,Answers:foundOne.answers,Questcomments:foundOne.questComment,Usera:new_user})
         // console.log(Answers);
     
 
@@ -115,7 +154,7 @@ router.post("/questions/:id", authenticate, async function(req,res){
         console.log(foundOne.title);
 
 
-        res.render("question-details",{Question:foundOne,Answers:foundOne.answers,Questcomments:foundOne.questComment})
+        res.redirect("/questions/"+QuestionID)
         // console.log(Answers);
     
 
@@ -216,19 +255,26 @@ router.post("/answercomment/:id", authenticate , async function(req,res){
    
 })
 
-router.post("/search" ,async function(req,res){
+router.post("/search" ,authenticate,async function(req,res){
+    const usera = await User.findById({_id:req.user.uid})
     tag=req.body.search_querry
     console.log(tag);
     const Questions = await questionModel.find({title:{$regex:tag,$options:"i"}})
+    const tag_questions = await questionModel.find({tags:{$regex:tag,$options:"i"}})
+    // console.log(tag_questions);
     const Users = await User.find({name:{$regex:tag,$options:"i"}})
     // const Groupposts = await questionModel.find({title:{$regex:tag,$options:"i"}})
     const Userposts = await userPost.find({body:{$regex:tag,$options:"i"}})
     const Groups = await Group.find({group_name:{$regex:tag,$options:"i"}})
         // var thumb = new Buffer(founditems.image.data).toString('base64')
         
-        res.render("search-result",{keyword:tag,questions:Questions,users:Users,groups:Groups,posts:Userposts})
+        res.render("search-result",{keyword:tag,hashtagquest:tag_questions,questions:Questions,users:Users,groups:Groups,posts:Userposts,User:usera})
         //  console.log(founditems);
    
+})
+
+router.get("/test",function(req,res){
+    res.send("Oauth is working")
 })
 
 router.post("/upvote", authenticate ,function(req,res){

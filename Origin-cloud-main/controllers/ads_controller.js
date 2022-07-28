@@ -1,5 +1,7 @@
 const Ad   = require('../models/ad_model')
 
+
+
 const createAd = async function(req,res){
     
     const Campaign_name=req.body.campaign_name
@@ -59,11 +61,16 @@ const createAd = async function(req,res){
 
     ad.save()
     console.log(ad);
-    res.json({
-        message: "Info stored successfully wait for admin to approve"
-    })
+    // res.json({
+    //     message: "Info stored successfully wait for admin to approve"
+    // })
+    res.redirct("/ad/pay/"+ad._id)
 
 }
+
+
+
+
 module.exports = {
-    createAd
+    createAd,
 }

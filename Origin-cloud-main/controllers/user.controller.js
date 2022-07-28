@@ -2,6 +2,8 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const User = require('../models/user.model')
 const passport = require('passport')
+const address = require("address")
+const ipLocate = require("node-iplocate");
 require("dotenv").config()
 
 // Signup user with email, password and first name
@@ -65,7 +67,7 @@ const loginUser = async (req, res) => {
 					uid: user._id
 				}, process.env.SECRET)
 				res.cookie('token', token, { httpOnly: true });
-				res.redirect("/")
+				res.redirect("/userpost/timeline/"+user._id)
 			} else {
 				res.json({
 					error: "Invalid username or password." // Password didn't match
@@ -205,20 +207,10 @@ const authorize = (req, res, next) => {
 	next()
 }
 
+
 const logoutUser = (req, res) => {
-	const token = req.cookies.token
-	req.cookie("key",token)
-	req.clearCookie("key")
-	res.end()
-	// res.clearCookie("jwt")
-	// req.logout()
-	// req.session.destroy()
-	
-	// req.cookies.set('token', {expires: Date.now()})
-	console.log(token);
-	// res.json({
-	// 	message: "Logged out successfully."
-	// })
+	res.clearCookie("token");
+	req.logout()
 	res.redirect("/user/login")
 }
 
@@ -288,6 +280,33 @@ const followUser = async (req, res) => {
 	}
 }
 
+const getuserlocation =function(req,res,next){
+	ipLocate(address.ip()).then(function(results) {
+	// const data = JSON.stringify(results,null,2);
+	if (results){
+		req.userloc=results
+		console.log(results.ip)
+		next()
+	}
+	// res.json({
+	// 	message:data
+	// })
+  });
+  }
+        //=> { latitude: -33.8591, longitude: 151.2002, region: { name: "New South Wales" ... } ... }
+
+
+	// Get saved token from requst cookies
+	// const token = req.cookies.token
+	// console.log(location);
+	// if (location) {
+	// 		req.locations = location
+	// 		console.log(location);
+		
+	// } 
+
+
+
 module.exports = {
 	userFollower,
 	signupUser,
@@ -296,5 +315,6 @@ module.exports = {
 	authenticate,
 	authorize,
 	updateUser,
-	followUser
+	followUser,
+	getuserlocation
 }

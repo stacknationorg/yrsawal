@@ -1,11 +1,18 @@
 const Mentor   = require('../models/mentor_model')
 const Mentee   = require('../models/mentee_model')
 
+const Razorpay = require("razorpay")
+
+var instance = new Razorpay({
+	key_id:"rzp_live_PnQSHoPi5lwM25",
+	key_secret:"ENUzbqgpXhxDX4BZGHvPXsyw"
+})
+
 const createMentor = async function(req,res){
 
     const reg_mentor = await Mentor.findOne({user:req.user.uid})
 
-    if(!reg_mentor){
+    if(reg_mentor.transaction==="not done"){
 
     const mentor = new Mentor({
         name:req.body.name,
@@ -22,12 +29,21 @@ const createMentor = async function(req,res){
         mentor_experience:req.body.mentor_experience,
         current_job:req.body.current_job,
         session_duration:req.body.session_duration,
-        timings:req.body.timing 
+        timings:req.body.timing
     })
     mentor.save()
-    res.json({
-        message:"Your Info has been recorded wait for admin's approval"
-    })
+
+    var options = {
+        amount: 1,  // amount in the smallest currency unit
+        currency: "INR",
+        receipt: "order_rcptid_11"
+      };
+      instance.orders.create(options, function(err, order) {
+        console.log(order);
+        res.render("mentorpay2",{OrderId:order.id})
+      });
+   
+    
 }
 else{
     res.json({
@@ -55,9 +71,11 @@ const createMentee = async function(req,res){
         time:req.body.time
     })
     mentee.save()
-    res.json({
-        message:"Your Info has been recorded wait for admin's approval and mentor's appointment"
-    })
+    // res.json({
+    //     message:"Your Info has been recorded wait for admin's approval and mentor's appointment"
+    // })
+
+    res.redirect("/user/mentee/pay/"+ mentee._id)
 
 }
 

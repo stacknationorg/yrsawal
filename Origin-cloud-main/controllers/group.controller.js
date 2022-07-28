@@ -50,7 +50,7 @@ const createGroup = async (req, res) => {
 			error: "Something went wrong."
 		})
 	}
-	res.redirect("/groups/grouphome")
+	res.redirect("/groups/grouphome/" + req.user.uid)
 }
 
 // Get group info by group_name

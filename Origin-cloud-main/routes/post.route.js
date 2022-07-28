@@ -21,12 +21,13 @@ router.use(express.static('public'))
 const { append } = require("express/lib/response");
 
 const { askQuestion,createPoll, createPost, updatePost, deletePost, getUserPosts, likePost, getLikes, votePoll, sharePost } = require('../controllers/post.controller')
-const { authenticate, authorize } = require('../controllers/user.controller')
+const {getuserlocation, authenticate, authorize } = require('../controllers/user.controller')
 
-router.get('/grouptimeline/:name', authenticate , async function(req,res){
+router.get('/grouptimeline/:name', authenticate ,getuserlocation, async function(req,res){
+    const data = req.userloc
     const grp_name=req.params.name
     logged_in = req.user.uid
-    const ad = await Ad.find({})
+    const ad = await Ad.find({locations:data.city})
     const grroup = await Group.findOne({group_name:grp_name})
     console.log(grroup);
     console.log(logged_in,grroup.admin);

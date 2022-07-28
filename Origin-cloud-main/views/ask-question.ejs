@@ -71,16 +71,16 @@
                 
             </ul>
             <div class="user-img">
-                <h5>Sailendra Damaraju</h5>
+                <h5><%=Usera.name%></h5>
                 <img src="/app/images/resources/company1.png" alt="">
                
                 <div class="user-setting">
                     
                     <ul class="log-out">
-                        <li><a href="#" title=""><i class="ti-user"></i> view profile</a></li>
-                        <li><a href="#" title=""><i class="ti-pencil-alt"></i>edit profile</a></li>
+                        <li><a href="/user/viewprofile/<%=Usera._id%>" title=""><i class="ti-user"></i> view profile</a></li>
+                        <li><a href="/user/editprofile/<%=Usera._id%>" title=""><i class="ti-pencil-alt"></i>edit profile</a></li>
                         
-                        <li><a href="#" title=""><i class="ti-power-off"></i>log out</a></li>
+                        <li><a href="/user/logout" title=""><i class="ti-power-off"></i>log out</a></li>
                     </ul>
                 </div>
             </div>

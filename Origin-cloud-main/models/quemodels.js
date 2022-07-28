@@ -6,16 +6,19 @@ const questionSchema = new mongoose.Schema({
     title: String,
     cateogary: String,
     author:String,
+    author_name:String,
     tags: [String],
     img:
     {
         data: Buffer,
         contentType: String
     },
+    vdo:
+    {
+        data: Buffer,
+        contentType: String
+    },
     details: String,
-
-
-
     answers: [{
         author:String,
         author_id:String,

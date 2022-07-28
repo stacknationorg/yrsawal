@@ -17,7 +17,12 @@ const mentorSchema = new mongoose.Schema({
         mentor_experience:String,
         current_job:String,
         session_duration:String,
-        timings:String
+        timings:String,
+        transction_id:String,
+        transaction:{
+                type: String,
+                default:"not done"
+        }
 })
 
 module.exports = mongoose.model("Mentor", mentorSchema)

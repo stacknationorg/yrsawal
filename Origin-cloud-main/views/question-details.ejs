@@ -70,16 +70,16 @@
                 
             </ul>
             <div class="user-img">
-                <h5>Sailendra Damaraju</h5>
+                <h5><%=Usera.name%></h5>
                 <img src="/app/images/resources/company1.png" alt="">
                
                 <div class="user-setting">
                     
                     <ul class="log-out">
-                        <li><a href="#" title=""><i class="ti-user"></i> view profile</a></li>
-                        <li><a href="#" title=""><i class="ti-pencil-alt"></i>edit profile</a></li>
+                        <li><a href="/user/viewprofile/<%=Usera._id%>" title=""><i class="ti-user"></i> view profile</a></li>
+                        <li><a href="/user/editprofile/<%=Usera._id%>" title=""><i class="ti-pencil-alt"></i>edit profile</a></li>
                         
-                        <li><a href="#" title=""><i class="ti-power-off"></i>log out</a></li>
+                        <li><a href="/user/logout" title=""><i class="ti-power-off"></i>log out</a></li>
                     </ul>
                 </div>
             </div>
@@ -168,8 +168,12 @@
                         <div class="question-post-body-wrap flex-grow-1">
                             <div class="question-post-body">
                                 <h5><%= Question.details %></h5>
-                                <!-- <p>Can you let me know?</p> -->
+                                <% if(Question.img.data){ %>
+                                 <%var image = Question.img.data.toString('base64')%>
+                                 <img src="data:image/png;base64,<%= image %>" alt="No image" />
+                                <% } %>
                             </div><!-- end question-post-body -->
+
                             <div class="question-post-user-action">
                                 <div class="post-menu">
                                     <button class="btn dropdown-toggle after-none" type="button" id="shareDropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Share</button>

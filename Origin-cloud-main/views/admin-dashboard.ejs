@@ -145,7 +145,7 @@
               </div>
               <div class="text-end pt-1">
                 <p class="text-sm mb-0 text-capitalize">Total Users</p>
-                <h4 class="mb-0">53k</h4>
+                <h4 class="mb-0"><%=Users.length%></h4>
               </div>
             </div>
            
@@ -155,11 +155,11 @@
           <div class="card">
             <div class="card-header p-3 pt-2">
               <div class="icon icon-lg icon-shape bg-gradient-primary shadow-primary text-center border-radius-xl mt-n4 position-absolute">
-                <i class="material-icons opacity-10">Answers</i>
+                <i class="material-icons opacity-10">Questions</i>
               </div>
               <div class="text-end pt-1">
-                <p class="text-sm mb-0 text-capitalize">Total Answers</p>
-                <h4 class="mb-0">2,300</h4>
+                <p class="text-sm mb-0 text-capitalize">Total Questions</p>
+                <h4 class="mb-0"><%=Questions.length%></h4>
               </div>
             </div>
            
@@ -173,7 +173,7 @@
               </div>
               <div class="text-end pt-1">
                 <p class="text-sm mb-0 text-capitalize">Total Groups</p>
-                <h4 class="mb-0">3,462</h4>
+                <h4 class="mb-0"><%=Groups.length%></h4>
               </div>
             </div>
             
@@ -187,7 +187,7 @@
               </div>
               <div class="text-end pt-1">
                 <p class="text-sm mb-0 text-capitalize">Total Posts</p>
-                <h4 class="mb-0">103,430</h4>
+                <h4 class="mb-0"><%= Groupposts.length + Userposts.length%></h4>
               </div>
             </div>
             

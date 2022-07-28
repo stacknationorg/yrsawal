@@ -169,16 +169,16 @@ input[type="checkbox"]{
 					
 				</ul>
 				<div class="user-img">
-					<h5>Sailendra Damaraju</h5>
+					<h5><%=User.name%></h5>
 					<img src="images/resources/company1.png" alt="">
 					
 					<div class="user-setting">
 						
 						<ul class="log-out">
-							<li><a href="view-profile.html" title=""><i class="ti-user"></i> view profile</a></li>
-							<li><a href="edit-profile.html" title=""><i class="ti-pencil-alt"></i>edit profile</a></li>
+							<li><a href="/user/viewprofile/<%=User._id%>" title=""><i class="ti-user"></i> view profile</a></li>
+							<li><a href="/user/editprofile/<%=User._id%>" title=""><i class="ti-pencil-alt"></i>edit profile</a></li>
 							
-							<li><a href="#" title=""><i class="ti-power-off"></i>log out</a></li>
+							<li><a href="/user/logout" title=""><i class="ti-power-off"></i>log out</a></li>
 						</ul>
 					</div>
 				</div>
@@ -348,6 +348,25 @@ input[type="checkbox"]{
 																</form>
 														</div>
 														<% }) %>
+
+														<% hashtagquest.forEach(function(question){ %>
+															<div class="friend-name">
+																<div class="more">
+																	<div class="more-post-optns"><i class="ti-more-alt"></i>
+																		<ul>
+																			<li class="send-mesg"><i class="fa fa-comment"></i>Send Message</li>
+																		</ul>
+																	</div>
+																</div>
+																<ins><a href="/user/viewprofile/<%=question.author%>" title=""><%=question.author%></a><%=question.title%></ins>
+																<span><i class="fa fa-globe"></i> published:  </span>
+																<form action="/questions/<%=question._id%>" method="post">
+							
+																	<!-- <p class="mb-2 truncate lh-20 fs-15"> <%= question.details %></p> -->
+																	<button id="details" type="submit" name="question_details" value="<%= question._id %>" onclick="views()">Details</button>
+																	</form>
+															</div>
+															<% }) %>
 
                                                         <div class="central-meta item">
 															<span class="create-post">People<a title="" href="#">See All</a></span>

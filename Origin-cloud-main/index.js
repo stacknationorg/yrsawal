@@ -1,7 +1,12 @@
 // const connectToMongo = require('./db');
 const express = require('express');
+
+
 const app = express()
 var cors = require('cors')
+const jwt = require('jsonwebtoken')
+const LocalStorage = require("node-localstorage").LocalStorage
+localStorage = new LocalStorage('./Cookies');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser')
 const flash = require('connect-flash');
@@ -15,7 +20,9 @@ const GoogleStrategy = require('passport-google-oauth2').Strategy
 const User = require('./models/user.model')
 // require("dotenv").config()
 // Routes
-
+const address = require("address")
+// const iplocate = require("iplocation")
+const ipLocate = require("node-iplocate")
 
 app.use(express.static('public'))
 
@@ -34,7 +41,6 @@ const DB_URI = process.env.DB_URI
 const port = process.env.PORT || 3000
 
 app.use(cors())
-app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 
@@ -93,6 +99,21 @@ app.use(passport.session())
 //     console.log('Database Connected');
 // })
 
+// ipLocate(address.ip()).then(function(results) {
+// 	console.log(JSON.stringify(results, null, 2));
+//   });
+
+// iplocate("8.8.8.8").then(function(result) {
+// 	console.log(result) // "Some User token"
+// })
+
+// console.log(address.ip())
+
+// (async () => {
+// 	await ipLocation(address.ip());
+// 	//=> { latitude: -33.8591, longitude: 151.2002, region: { name: "New South Wales" ... } ... }
+// })();
+
 const queroutes = require("./routes/queroutes.js")
 
 const adroutes = require("./routes/ads_routes.js")
@@ -100,66 +121,90 @@ const adroutes = require("./routes/ads_routes.js")
 const adminroutes = require("./routes/admin_routes.js")
 
 // app.use("/",routes)
+passport.use(User.createStrategy());
 
-// passport.use(new GoogleStrategy(
-// 	{
-// 		clientID: process.env.GGL_CLIENT_ID,
-// 		clientSecret: process.env.GGL_CLIENT_SECRET,
-// 		callbackURL: '/api/user/callback/google',
-// 		passReqToCallback: true,
-// 		profileFields: [ 'id', 'displayName', 'gender', 'email', 'picture.type(large)' ]
-// 	},
-// 	async (request, token, refreshToken, profile, done) => {
-// 		const { email, picture: avatar } = profile
-// 		try {
-// 			const user = await User.findOne({ email })
-// 			if (user) {
-// 				done(null, user)
-// 			} else {
-// 				const newUser = new User({
-// 					email,
-// 					avatar
-// 				})
-// 				await newUser.save()
-// 				done(null, newUser)
-// 			}
-// 		} catch(error) {
-// 			done(error)
-// 		}
-// 	}
-// ))
+passport.serializeUser(function(user, done) {
+	done(null, user.id);
+  });
+  
+  passport.deserializeUser(function(id, done) {
+	User.findById(id, function(err, user) {
+	  done(err, user);
+	});
+  });
+  app.use(express.json());
+
+passport.use(new GoogleStrategy(
+	{
+		clientID: process.env.GGL_CLIENT_ID,
+		clientSecret: process.env.GGL_CLIENT_SECRET,
+		callbackURL: 'http://localhost:3000/user/auth/google/callback',
+		userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
+		passReqToCallback: true		
+	},
+	async (req,accessToken, refreshToken, profile, done) => {
+		console.log(profile.email)
+		try {
+			const user = await User.findOne({email:profile.email})
+			console.log(profile.email)
+			if (user) { 
+				console.log(user._id)
+			    req.user=user
+				done(null, user)
+			} else {
+				const newUser = new User({
+					email:profile.email,
+					avatar:profile.picture,
+					name:profile.displayName,
+					gender:profile.gender
+				})
+				await newUser.save()
+				console.log(newUser)
+				req.user=newUser
+				// const currentUser = await User.findOne({email})
+				done(null, newUser)
+			}
+		} catch(error) {
+			// done(error)
+		}
+	}
+))
 
 
 
-// passport.use(new FacebookStrategy(
-// 	{
-// 		clientID: process.env.FB_CLIENT_ID,
-// 		clientSecret: process.env.FB_CLIENT_SECRET,
-// 		callbackURL: '/api/user/callback/facebook',
-// 		profileFields: [ 'id', 'displayName', 'gender', 'email', 'picture.type(large)' ]
-// 	},
-// 	async (token, refreshToken, profile, done) => {
-// 		try {
-// 			const email = profile.emails[0].value
-// 			const user = await User.findOne({ email })
-// 			if (user) {
-// 				done(null, user)
-// 			} else {
-// 				const newUser = new User({
-// 					name: profile.displayName,
-// 					email: email,
-// 					gender: profile.gender,
-// 					birthday: profile.birthday,
-// 					avatar: profile.photos[0].value
-// 				})
-// 				await newUser.save()
-// 				done(null, user)
-// 			}
-// 		} catch(error) {
-// 			done(error)
-// 		}
-// 	}
-// ))
+
+
+passport.use(new FacebookStrategy(
+	{
+		clientID: process.env.FB_CLIENT_ID,
+		clientSecret: process.env.FB_CLIENT_SECRET,
+		callbackURL: 'http://localhost:3000/user/auth/callback/facebook',
+		profileFields: [ 'id', 'displayName', 'gender', 'email', 'picture.type(large)' ]
+	},
+	async (req,token, refreshToken, profile, done) => {
+		try {
+			const email = profile.emails[0].value
+			const user = await User.findOne({ email })
+			if (user) {
+				req.user = user
+				done(null, user)
+			} else {
+				const newUser = new User({
+					name: profile.displayName,
+					email: email,
+					gender: profile.gender,
+					birthday: profile.birthday,
+					avatar: profile.photos[0].value
+				})
+				await newUser.save()
+				req.user=newUser
+				done(null, user)
+			}
+		} catch(error) {
+			done(error)
+		}
+	}
+))
 
 
 // passport.serializeUser((user, done) => {
@@ -214,6 +259,8 @@ app.get("/pro",function(req,res){
 app.listen(port, () => {
     console.log(`App is listening on port http://localhost:${port}`);
 })
+
+
 
 
 // mongoose.connect(DB_URI,{useNewUrlParser: true,

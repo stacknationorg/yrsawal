@@ -413,6 +413,7 @@
 									<% } %>
 
 									<% Ads.forEach(function(Ad){ %>
+										<%if (Ad.ad_status === "approved"){ %>
 										<div class="central-meta item">
 											<div class="user-post">
 												<div class="friend-info">
@@ -451,7 +452,7 @@
 												</div>
 											</div>
 										</div>
-							
+							               <% } %>
 										<% }) %>
 									<% posts.forEach(function(post){ %>
 										<div class="loadMore">

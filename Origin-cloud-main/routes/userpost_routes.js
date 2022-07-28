@@ -19,7 +19,7 @@ router.use(express.static('public'))
 const { append } = require("express/lib/response");
 
 const {askQuestion,createPoll, createPost, updatePost, deletePost, getUserPosts, likePost, getLikes, votePoll } = require('../controllers/userpost_controller')
-const { authenticate, authorize } = require('../controllers/user.controller')
+const {getuserlocation, authenticate, authorize } = require('../controllers/user.controller')
 
 // router.get('/timeline/:id', authenticate ,function(req,res){
 //     const id=req.params.id
@@ -31,11 +31,13 @@ const { authenticate, authorize } = require('../controllers/user.controller')
     
 // })
 
-router.get('/timeline/:id',authenticate, async (req, res) => {
+router.get('/timeline/:id',authenticate,getuserlocation, async (req, res) => {
+    
     const user_id = req.user.uid
     const id = req.params.id
    console.log(user_id);
-   const ad = await Ad.find({})
+   const data = req.userloc
+   const ad = await Ad.find({locations:data.city})
    const shared_posts = await sharedPost.find({shared_timeline:id}) 
    const new_user = await User.findById({_id:req.params.id})
    const user_post=await userPost.find({author:req.params.id})

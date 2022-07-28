@@ -84,22 +84,23 @@
                 
             </ul>
             <div class="user-img">
-                <h5>Sailendra Damaraju</h5>
+                <h5><%=Usera.name%></h5>
                 <img src="app/images/resources/company1.png" alt="">
                
                 <div class="user-setting">
                     
                     <ul class="log-out">
-                        <li><a href="#" title=""><i class="ti-user"></i> view profile</a></li>
-                        <li><a href="#" title=""><i class="ti-pencil-alt"></i>edit profile</a></li>
+                        <li><a href="/user/viewprofile/<%=Usera._id%>" title=""><i class="ti-user"></i> view profile</a></li>
+                        <li><a href="/user/editprofile/<%=Usera._id%>" title=""><i class="ti-pencil-alt"></i>edit profile</a></li>
                         
-                        <li><a href="#" title=""><i class="ti-power-off"></i>log out</a></li>
+                        <li><a href="/user/logout" title=""><i class="ti-power-off"></i>log out</a></li>
                     </ul>
                 </div>
             </div>
             </div>
         
     </div><!-- topbar -->
+    
         <div class="fixed-sidebar left">
             <div class="menu-left">
                 <ul class="left-menu">
@@ -140,6 +141,7 @@
                 </div>
             </div><!-- end filters -->
             <% Ads.forEach(function(Ad){ %>
+                <%if (Ad.ad_status === "approved"){ %>
             <div class="central-meta item">
                 <div class="user-post">
                     <div class="friend-info">
@@ -178,7 +180,7 @@
                     </div>
                 </div>
             </div>
-
+               <% } %>
             <% }) %>
 
             <% newQuestions.forEach(function(question){ %>
@@ -201,15 +203,33 @@
                     </div>
                     
                     <div class="media-body">
+                       
                         <ins><a href="/user/viewprofile/<%= question.author %>" title="">
-                            <%= question.author %>
+                            <%= question.author_name %>
                         </a></ins>
-                        <h5 class="mb-2 fw-medium"> <%= question.title %></h5>
-                        <form action="/questions/<%=question._id%>" method="post">
+                        <a href="/questions/<%=question._id%>"><h5 class="mb-2 fw-medium"> <%= question.title %></h5></a>
+                        <% if(question.img.data!=undefined){ %>
+                        <%var image = question.img.data.toString('base64')%>
+                        <img src="data:image/png;base64,<%= image %>" alt="No image" />
+                        <% } %>
+                        <% if(question.vdo.data!=undefined){ %>
+                            <%var video = question.vdo.data.toString('base64')%>
+                            <video id="myVid" width="600" height="300" onclick="playPause()">
+                                <source src="data:video/mp4;base64,<%= video %>"> 
+                            </video>
+                            <script> 
+                            function playPause(e) {
+                            var myVideo = document.getElementById("myVid");
+                            if (myVideo.paused) myVideo.play();
+                            else myVideo.pause();
+                              }
+                            </script> 
+                        <% } %>
+                        <!-- <form action="/questions/<%=question._id%>" method="post"> -->
                         
                         <!-- <p class="mb-2 truncate lh-20 fs-15"> <%= question.details %></p> -->
-                        <button id="details" type="submit" name="question_details" value="<%= question._id %>" onclick="views()">Details</button>
-                        </form>
+                        <!-- <button id="details" type="submit" name="question_details" value="<%= question._id %>" onclick="views()">Details</button> -->
+                        <!-- </form> -->
                         <div class="tags">
                             <a  href="#" class="tag-link"><img src="images/answer.png"> Answer</a>
                             <a href="#" class="tag-link"><img src="images/share.png"> Share</a>
