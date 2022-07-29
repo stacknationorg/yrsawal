@@ -11,7 +11,7 @@ router.get("/publish", authenticate,async function(req,res){
     
     const user = await User.findById({_id:req.user.uid})
 
-    res.render("ad-center",{User:user})
+    res.json("ad-center",{User:user})
 })
 
 router.post("/publish/:id",authenticate,createAd)
