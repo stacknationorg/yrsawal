@@ -64,7 +64,7 @@ const createAd = async function(req,res){
     // res.json({
     //     message: "Info stored successfully wait for admin to approve"
     // })
-    res.redirct("/ad/pay/"+ad._id)
+    res.json("/ad/pay/"+ad._id)
 
 }
 
